@@ -106,7 +106,7 @@ const RestaurantMenuSystem = () => {
 
   const fetchCategoriesData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.categories) {
@@ -158,7 +158,7 @@ const RestaurantMenuSystem = () => {
   const fetchAllMenuItemsForHappyHours = async () => {
     try {
       // Fetch all menu categories
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
       if (response.ok) {
         const categoriesData = await response.json();
         if (categoriesData.success && categoriesData.data.categories) {
@@ -169,7 +169,7 @@ const RestaurantMenuSystem = () => {
           // Fetch each category's full data
           for (const category of categoriesData.data.categories) {
             try {
-              const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/${category.name}`);
+              const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/${category.name}`);
               if (categoryResponse.ok) {
                 const categoryData = await categoryResponse.json();
                 if (categoryData.success && categoryData.data.subcategories) {
@@ -245,7 +245,7 @@ const RestaurantMenuSystem = () => {
 
   const fetchHappyHoursMenu = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/happyhours/menu`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours/menu`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.categories && data.data.categories.length > 0) {
@@ -317,7 +317,7 @@ const RestaurantMenuSystem = () => {
       }
 
       // For regular categories, fetch from API using categoryId
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/${categoryId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/${categoryId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.subcategories) {
@@ -376,7 +376,7 @@ const RestaurantMenuSystem = () => {
 
   const fetchHappyHoursData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/happyhours`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {

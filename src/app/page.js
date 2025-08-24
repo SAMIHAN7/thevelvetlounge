@@ -19,7 +19,7 @@ export default function ClubLandingPage() {
   const [loading, setLoading] = useState(true);
   
   // API base URL from environment variable
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   // Fetch data from APIs
   useEffect(() => {

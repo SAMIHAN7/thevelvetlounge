@@ -23,7 +23,7 @@ export default function EventsPage() {
   const EVENTS_PER_PAGE = 6;
   
   // API base URL from environment variable
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   // Helper functions
   const formatDate = (dateString) => {

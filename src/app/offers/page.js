@@ -11,7 +11,7 @@ const OffersPage = () => {
   const [selectedOffer, setSelectedOffer] = useState(null);
 
   // API base URL from environment variable
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   // Fetch offers data
   useEffect(() => {

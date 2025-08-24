@@ -59,7 +59,7 @@ const MenuCategoriesPage = () => {
 
   const fetchMenuData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
       if (response.ok) {
         const data = await response.json();
         if (data?.success && data?.data?.categories) {
@@ -105,7 +105,7 @@ const MenuCategoriesPage = () => {
 
   const fetchHappyHoursData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/happyhours`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours`);
       if (response.ok) {
         const data = await response.json();
         if (data?.success) {

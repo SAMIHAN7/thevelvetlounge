@@ -28,7 +28,7 @@ export default function EventRegistrationPage() {
   useEffect(() => {
     const fetchEventData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/registration/event/${eventId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/registration/event/${eventId}`);
         const result = await response.json();
         
         if (result.success) {
@@ -130,7 +130,7 @@ export default function EventRegistrationPage() {
 
     try {
       console.log('📡 Making API call to verify phone:', phoneNumber);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/registration/verify-phone`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/registration/verify-phone`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -198,7 +198,7 @@ export default function EventRegistrationPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/registration/register`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/registration/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
