@@ -204,7 +204,7 @@ export default function ClubLandingPage() {
               <div className="flex items-center justify-center mb-6">
                 <Clock className="w-12 h-12 text-amber-400 mr-4" />
                 <div className="text-left">
-                  <h3 className="text-3xl font-bold text-white mb-2">Daily 7:00 PM - 8:00 PM</h3>
+                  <h3 className="text-3xl font-bold text-white mb-2">Daily 11:00 PM - 8:00 PM</h3>
                   <p className="text-amber-300 text-lg">Exclusive offers on premium drinks & appetizers</p>
                 </div>
               </div>
