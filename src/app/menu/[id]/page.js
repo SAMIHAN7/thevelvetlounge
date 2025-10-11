@@ -761,7 +761,7 @@ const RestaurantMenuSystem = () => {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="max-w-6xl mx-auto mb-8">
+      <div className="max-w-6xl mx-auto mb-12 md:mb-8">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
@@ -801,10 +801,10 @@ const RestaurantMenuSystem = () => {
               </div>
 
               {/* Mobile Horizontal Carousel */}
-      <div className="md:hidden mb-8">
-        <div className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide">
+      <div className="md:hidden mb-12 mt-24 relative z-50 overflow-visible">
+        <div className="flex gap-4 overflow-x-auto pb-8 pt-4 px-4 scrollbar-hide">
           {categories.map((category) => (
-            <div key={category.id} className="min-w-[280px]">
+            <div key={category.id} className="min-w-[280px] flex-shrink-0 relative z-50">
               <CategoryCard category={category} onClick={handleCategoryClick} />
             </div>
           ))}
@@ -882,7 +882,7 @@ const RestaurantMenuSystem = () => {
       </div>
 
       {/* Floating Particles Effect */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-40">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-30">
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
