@@ -916,3 +916,5 @@ const RestaurantMenuSystem = () => {
     </>
   );
 };
+
+export default RestaurantMenuSystem;
