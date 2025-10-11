@@ -152,7 +152,7 @@ export default function ClubLandingPage() {
           </div>
           <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full mb-8"></div>
           <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto">
-            Where elegance meets excitement. Experience the ultimate lounge atmosphere with world-class entertainment, exquisite cuisine, and unforgettable moments in pure velvet luxury.
+            Where elegance meets excitement. 
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
