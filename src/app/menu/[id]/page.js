@@ -9,12 +9,12 @@ import Footer from '../../../components/Footer';
 // Utility function to convert 24-hour time to 12-hour format
 const convertTo12Hour = (time24) => {
   if (!time24) return time24;
-  
+
   const [hours, minutes] = time24.split(':');
   const hour = parseInt(hours);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
-  
+
   return `${hour12}:${minutes} ${ampm}`;
 };
 
@@ -48,7 +48,7 @@ const RestaurantMenuSystem = () => {
   const params = useParams();
   const router = useRouter();
   const categoryId = params.id;
-  
+
   const [currentView, setCurrentView] = useState('food');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedSections, setExpandedSections] = useState({});
@@ -106,7 +106,7 @@ const RestaurantMenuSystem = () => {
 
   const fetchCategoriesData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.categories) {
@@ -158,31 +158,31 @@ const RestaurantMenuSystem = () => {
   const fetchAllMenuItemsForHappyHours = async () => {
     try {
       // Fetch all menu categories
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
       if (response.ok) {
         const categoriesData = await response.json();
         if (categoriesData.success && categoriesData.data.categories) {
           setSelectedCategory({ name: 'Happy Hours' });
-          
+
           const allHappyHourSections = [];
-          
+
           // Fetch each category's full data
           for (const category of categoriesData.data.categories) {
             try {
-              const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/${category.name}`);
+              const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/${category.name}`);
               if (categoryResponse.ok) {
                 const categoryData = await categoryResponse.json();
                 if (categoryData.success && categoryData.data.subcategories) {
-                  
+
                   categoryData.data.subcategories.forEach((subcategory, subIndex) => {
                     // Filter items that have happy hour pricing or are marked for happy hours
                     const happyHourItems = subcategory.items.filter(item => 
                       item.price && (item.price.happyHour || item.price.isHappyHourActive)
                     );
-                    
+
                     if (happyHourItems.length > 0) {
                       const sectionId = `${category.name.toLowerCase().replace(/\s+/g, '')}-${subcategory.name.toLowerCase().replace(/\s+/g, '')}`;
-                      
+
                       allHappyHourSections.push({
                         id: sectionId,
                         name: `${category.name} - ${subcategory.name}`,
@@ -218,10 +218,10 @@ const RestaurantMenuSystem = () => {
               console.error(`Error fetching category ${category.name}:`, err);
             }
           }
-          
+
           if (allHappyHourSections.length > 0) {
             setFoodSections(allHappyHourSections);
-            
+
             // Set expanded sections - first section expanded by default
             const newExpandedSections = {};
             allHappyHourSections.forEach((section, index) => {
@@ -245,19 +245,19 @@ const RestaurantMenuSystem = () => {
 
   const fetchHappyHoursMenu = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours/menu`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/happyhours/menu`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.categories && data.data.categories.length > 0) {
           setSelectedCategory({ name: 'Happy Hours' });
-          
+
           // Map Happy Hours categories to food sections format
           const happyHourSections = [];
-          
+
           data.data.categories.forEach(category => {
             category.subcategories.forEach((subcategory, subIndex) => {
               const sectionId = `${category.category.toLowerCase().replace(/\s+/g, '')}-${subcategory.name.toLowerCase().replace(/\s+/g, '')}`;
-              
+
               happyHourSections.push({
                 id: sectionId,
                 name: `${category.category} - ${subcategory.name}`,
@@ -286,14 +286,14 @@ const RestaurantMenuSystem = () => {
           });
 
           setFoodSections(happyHourSections);
-          
+
           // Set expanded sections - first section expanded by default
           const newExpandedSections = {};
           happyHourSections.forEach((section, index) => {
             newExpandedSections[section.id] = index === 0;
           });
           setExpandedSections(newExpandedSections);
-          
+
         } else {
           // No specific happy hour items found, fallback to showing all menu items with happy hour pricing
           await fetchAllMenuItemsForHappyHours();
@@ -317,13 +317,13 @@ const RestaurantMenuSystem = () => {
       }
 
       // For regular categories, fetch from API using categoryId
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/${categoryId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/${categoryId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.subcategories) {
           // Set the selected category
           setSelectedCategory({ name: data.data.category });
-          
+
           // Map API data to our foodSections format
           const mappedSections = data.data.subcategories.map((subcat, index) => ({
             id: subcat.name.toLowerCase().replace(/\s+/g, ''),
@@ -351,7 +351,7 @@ const RestaurantMenuSystem = () => {
             }))
           }));
           setFoodSections(mappedSections);
-          
+
           // Update expanded sections based on API data
           const newExpandedSections = {};
           mappedSections.forEach((section, index) => {
@@ -376,7 +376,7 @@ const RestaurantMenuSystem = () => {
 
   const fetchHappyHoursData = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/happyhours`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -542,7 +542,7 @@ const RestaurantMenuSystem = () => {
   const CategoryCard = ({ category, onClick }) => {
     // Check if this category is currently selected
     const isCurrentCategory = selectedCategory && selectedCategory.name === category.name;
-    
+
     return (
       <div
         onClick={() => onClick(category)}
@@ -556,7 +556,7 @@ const RestaurantMenuSystem = () => {
       />
       <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient} opacity-70 group-hover:opacity-80 transition-opacity duration-500 z-10`} />
       <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-yellow-400 transition-all duration-500 z-20" />
-      
+
       {/* Happy Hours Status Badge */}
       {category.name === 'Happy Hours' && happyHoursData && happyHoursData.exists && (
         <div className="absolute top-4 right-4 z-30">
@@ -569,19 +569,19 @@ const RestaurantMenuSystem = () => {
           </div>
         </div>
       )}
-      
+
       <div className="relative h-64 flex flex-col items-center justify-center text-center p-6 z-20">
         <h3 className="text-2xl font-bold text-white mb-2 transform transition-all duration-500 group-hover:scale-110 group-hover:text-yellow-300">
           {category.name}
         </h3>
-        
+
         {/* Happy Hours additional info */}
         {category.name === 'Happy Hours' && happyHoursData && happyHoursData.exists && (
           <p className="text-sm text-gray-200 opacity-90 mb-2">
             {happyHoursData.isLive ? 'LIVE NOW' : `Available ${convertTo12Hour(happyHoursData.startTime)} - ${convertTo12Hour(happyHoursData.endTime)}`}
           </p>
         )}
-        
+
         <div className="w-0 h-0.5 bg-yellow-400 transition-all duration-500 group-hover:w-full"></div>
       </div>
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30" 
@@ -596,54 +596,56 @@ const RestaurantMenuSystem = () => {
         ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10' 
         : 'border-gray-700/50'
     } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer`}>
-    {/* Left: Image */}
-    <div
-      className="w-40 h-40 flex-shrink-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
-      style={{ backgroundImage: `url(${item.image})` }}
-    >
-      {/* Happy Hour Live Badge */}
-      {item.isHappyHour && happyHoursData && happyHoursData.isLive && (
-        <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
-          🔴 LIVE
+      {/* Left: Image */}
+      <div
+        className="w-40 h-40 flex-shrink-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
+        style={{ backgroundImage: `url(${item.image})` }}
+      >
+        {/* Happy Hour Live Badge */}
+        {item.isHappyHour && happyHoursData && happyHoursData.isLive && (
+          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
+            🔴 LIVE
+          </div>
+        )}
+      </div>
+
+      {/* Right: Content */}
+      <div className="flex flex-col justify-between p-4 flex-grow">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className={`text-xl font-bold ${
+              item.isHappyHour ? 'text-yellow-400' : 'text-white'
+            } group-hover:text-yellow-400 transition-colors duration-300`}>
+              {item.name}
+            </h4>
+            {item.type && item.type !== 'None' && (
+              <div className="flex items-center gap-1">
+                {getFoodTypeIcon(item.type)}
+                {/* <span className="text-xs text-gray-400">{item.type}</span> */}
+              </div>
+            )}
+          </div>
+          <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
         </div>
-      )}
+        <div className={`mt-2 ${
+          item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold">{item.price}</span>
+            {item.originalPrice && item.isCurrentlyDiscounted && (
+              <span className="text-sm text-gray-400 line-through">{item.originalPrice}</span>
+            )}
+            {item.isCurrentlyDiscounted && (
+              <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full font-bold">
+                HAPPY HOUR
+              </span>
+            )}
+          </div>
+
+        </div>
+      </div>
     </div>
 
-    {/* Right: Content */}
-    <div className="flex flex-col justify-between p-4 flex-grow">
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <h4 className={`text-xl font-bold ${
-            item.isHappyHour ? 'text-yellow-400' : 'text-white'
-          } group-hover:text-yellow-400 transition-colors duration-300`}>
-            {item.name}
-          </h4>
-          {item.type && (
-            <div className="flex items-center gap-1">
-              {getFoodTypeIcon(item.type)}
-              <span className="text-xs text-gray-400">{item.type}</span>
-            </div>
-          )}
-        </div>
-        <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
-      </div>
-      <div className={`mt-2 ${
-        item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
-      }`}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">{item.price}</span>
-          {item.originalPrice && item.isCurrentlyDiscounted && (
-            <span className="text-sm text-gray-400 line-through">{item.originalPrice}</span>
-          )}
-          {item.isCurrentlyDiscounted && (
-            <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full font-bold">
-              HAPPY HOUR
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
   );
 
   // Loading state
@@ -652,7 +654,7 @@ const RestaurantMenuSystem = () => {
       <>
         <Navbar />
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-24 py-12 px-4">
-        
+
         {/* Logo Section */}
         {/* <div className="max-w-6xl mx-auto text-center mb-16">
           <div className="flex flex-col items-center justify-center mb-8">
@@ -665,7 +667,7 @@ const RestaurantMenuSystem = () => {
           </div>
           <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full mb-16"></div>
         </div> */}
-        
+
         <div className="flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400 mx-auto mb-4"></div>
@@ -684,7 +686,7 @@ const RestaurantMenuSystem = () => {
       <>
         <Navbar />
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-24 py-12 px-4">
-        
+
         {/* Logo Section */}
         {/* <div className="max-w-6xl mx-auto text-center mb-16">
           <div className="flex flex-col items-center justify-center mb-8">
@@ -697,7 +699,7 @@ const RestaurantMenuSystem = () => {
           </div>
           <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full mb-16"></div>
         </div> */}
-        
+
         <div className="max-w-6xl mx-auto text-center">
           <Link
             href="/menu"
@@ -706,7 +708,7 @@ const RestaurantMenuSystem = () => {
             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
             Back to Menu
           </Link>
-          
+
           <div className="text-center py-20">
             <h1 className="text-4xl font-bold text-white mb-4">Category Not Found</h1>
             <p className="text-gray-300 mb-8">The menu category "{categoryId}" doesn't exist or has no items.</p>
@@ -728,7 +730,7 @@ const RestaurantMenuSystem = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-24 py-12 px-4">
-      
+
       {/* Logo Section */}
       {/* <div className="max-w-6xl mx-auto text-center mb-16">
         <div className="flex flex-col items-center justify-center mb-8">
@@ -741,7 +743,7 @@ const RestaurantMenuSystem = () => {
         </div>
         {/* <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full mb-16"></div> */}
       {/* </div> */}
-      
+
       {/* Header with Back Button */}
       <div className="max-w-6xl mx-auto mb-12">
         {/* <Link
@@ -751,7 +753,7 @@ const RestaurantMenuSystem = () => {
           <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
           Back to Categories
         </Link> */}
-        
+
         <h1 className="text-5xl font-bold text-center mb-4 bg-gradient-to-r from-yellow-400 via-red-500 to-orange-500 bg-clip-text text-transparent">
           {selectedCategory ? `${selectedCategory.name}` : 'Menu'}
         </h1>
@@ -773,30 +775,32 @@ const RestaurantMenuSystem = () => {
             />
           </div>
 
-          {/* Filter Buttons */}
-          <div className="flex items-center gap-2">
-            <Filter className="text-gray-400 w-5 h-5" />
-            <div className="flex gap-2">
-              {['All', 'Veg', 'Non-Veg', 'Egg'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setSelectedFilter(filter)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
-                    selectedFilter === filter
+          {/* /* Filter Buttons */} 
+                {(selectedCategory && !['Beverages', 'Drinks'].includes(selectedCategory.name)) && (
+                <div className="flex items-center gap-2">
+                  <Filter className="text-gray-400 w-5 h-5" />
+                  <div className="flex gap-2">
+                  {['All', 'Veg', 'Non-Veg', 'Egg'].map((filter) => (
+                    <button
+                    key={filter}
+                    onClick={() => setSelectedFilter(filter)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                      selectedFilter === filter
                       ? 'bg-yellow-400 text-black'
                       : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50'
-                  }`}
-                >
-                  {filter !== 'All' && getFoodTypeIcon(filter)}
-                  {filter}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+                    }`}
+                    >
+                    {filter !== 'All' && getFoodTypeIcon(filter)}
+                    {filter}
+                    </button>
+                  ))}
+                  </div>
+                </div>
+                )}
+              </div>
+              </div>
 
-      {/* Mobile Horizontal Carousel */}
+              {/* Mobile Horizontal Carousel */}
       <div className="md:hidden mb-8">
         <div className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide">
           {categories.map((category) => (
@@ -912,5 +916,3 @@ const RestaurantMenuSystem = () => {
     </>
   );
 };
-
-export default RestaurantMenuSystem;
