@@ -23,12 +23,12 @@ export default function Footer() {
             <div className="space-y-4 text-gray-400">
               <div className="bg-black/30 rounded-xl p-4 border border-yellow-400/20">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">All Days</span>
+                  <span className="text-lg font-semibold bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">Everyday</span>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-white bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
                       11:00 AM - Midnight
                     </div>
-                    <div className="text-xs text-yellow-300/70 mt-1">Daily Service</div>
+                    {/* <div className="text-xs text-yellow-300/70 mt-1">Daily Service</div> */}
                   </div>
                 </div>
                 <div className="mt-3 h-1 bg-gradient-to-r from-yellow-400/20 via-amber-400/60 to-yellow-400/20 rounded-full"></div>
@@ -46,7 +46,7 @@ export default function Footer() {
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 mr-3 text-red-400 mt-1" />
                 <div className="flex-1">
-                  <div className="text-white font-semibold mb-2">The Velvet Lounge, Millennia Building, Near Wood Store, Tarabai park, Kolhapur. 416003</div>
+                  <div className="text-white font-semibold mb-2">The Velvet Lounge, Millennia Building, Near Woodland Store, Tarabai park, Kolhapur. 416003</div>
                   <a 
                     href="https://maps.app.goo.gl/dukC6d3mbBkMGGu26?g_st=iw" 
                     target="_blank" 
@@ -82,7 +82,7 @@ export default function Footer() {
         <div className="border-t border-amber-400/20 pt-8 mt-12 text-center">
           <div className="h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-30 mb-8"></div>
           <p className="text-gray-400">
-            © 2025 The Velvet Lounge. All rights reserved. | Where elegance meets excitement. 
+            © 2025 The Velvet Lounge. All rights reserved.
           </p>
         </div>
       </div>

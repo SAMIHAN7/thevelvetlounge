@@ -132,18 +132,18 @@ const MenuCategoriesPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-24 py-12 px-4">
       
       {/* Logo Section */}
-      <div className="max-w-6xl mx-auto text-center mb-16">
+      <div className="max-w-6xl mx-auto text-center mb-8">
         <div className="flex flex-col items-center justify-center mb-8">
-          <img 
-            src="/logo.png" 
-            alt="The Velvet Lounge" 
+          <img
+            src="/logo.png"
+            alt="The Velvet Lounge"
             className="w-32 h-32 md:w-40 md:h-40 object-contain mb-6 hover:scale-110 transition-transform duration-500"
           />
-          
+
         </div>
-        <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full mb-16"></div>
+        {/* <div className="w-32 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto rounded-full"></div> */}
       </div>
-      
+
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-16">
         <h1 className="text-6xl font-bold text-center mb-4 bg-gradient-to-r from-yellow-400 via-red-500 to-orange-500 bg-clip-text text-transparent">
