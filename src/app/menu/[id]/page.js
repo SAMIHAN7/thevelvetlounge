@@ -18,6 +18,29 @@ const convertTo12Hour = (time24) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
+// Utility function to check if current time is between start and end time
+const isCurrentlyLive = (startTime, endTime) => {
+  if (!startTime || !endTime) return false;
+
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const startTimeInMinutes = startHours * 60 + startMinutes;
+
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
+  const endTimeInMinutes = endHours * 60 + endMinutes;
+
+  // Handle case where end time is past midnight (e.g., 22:00 - 02:00)
+  if (endTimeInMinutes < startTimeInMinutes) {
+    return currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes;
+  }
+
+  return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;
+};
+
 // Function to render food type icon
 const getFoodTypeIcon = (type) => {
   switch (type) {
@@ -59,6 +82,11 @@ const RestaurantMenuSystem = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [filteredSections, setFilteredSections] = useState([]);
+
+  // Calculate if Happy Hours is currently live based on time
+  const isLive = happyHoursData?.exists && happyHoursData?.startTime && happyHoursData?.endTime
+    ? isCurrentlyLive(happyHoursData.startTime, happyHoursData.endTime)
+    : false;
 
   useEffect(() => {
     if (categoryId) {
@@ -192,11 +220,11 @@ const RestaurantMenuSystem = () => {
                           id: item._id,
                           name: item.name,
                           description: item.description || 'Happy Hour special item',
-                          price: happyHoursData && happyHoursData.isLive && item.price.happyHour 
-                            ? `₹${item.price.happyHour}` 
+                          price: isLive && item.price.happyHour
+                            ? `₹${item.price.happyHour}`
                             : `₹${item.price.standard}`,
-                          originalPrice: happyHoursData && happyHoursData.isLive && item.price.happyHour 
-                            ? `₹${item.price.standard}` 
+                          originalPrice: isLive && item.price.happyHour
+                            ? `₹${item.price.standard}`
                             : null,
                           image: item.image || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop',
                           isSpicy: item.type === 'Non-Veg',
@@ -204,7 +232,7 @@ const RestaurantMenuSystem = () => {
                           rating: 4.8,
                           isHappyHour: true,
                           type: item.type,
-                          isCurrentlyDiscounted: happyHoursData && happyHoursData.isLive && item.price.happyHour,
+                          isCurrentlyDiscounted: isLive && item.price.happyHour,
                           happyHourPrice: item.price.happyHour,
                           standardPrice: item.price.standard,
                           isHappyHourActive: item.price.isHappyHourActive
@@ -333,19 +361,19 @@ const RestaurantMenuSystem = () => {
               id: item._id || item.id,
               name: item.name,
               description: item.description || 'Delicious menu item',
-              price: happyHoursData && happyHoursData.isLive && item.price.happyHour 
-                ? `₹${item.price.happyHour}` 
+              price: isLive && item.price.happyHour
+                ? `₹${item.price.happyHour}`
                 : `₹${item.price.standard}`,
-              originalPrice: happyHoursData && happyHoursData.isLive && item.price.happyHour 
-                ? `₹${item.price.standard}` 
+              originalPrice: isLive && item.price.happyHour
+                ? `₹${item.price.standard}`
                 : null,
               image: item.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop',
               isSpicy: item.isSpicy || false,
               prepTime: item.prepTime || '15 min',
               rating: item.rating || 4.5,
               type: item.type,
-              isCurrentlyDiscounted: happyHoursData && happyHoursData.isLive && item.price.happyHour,
-              isHappyHour: happyHoursData && happyHoursData.isLive && item.price.happyHour,
+              isCurrentlyDiscounted: isLive && item.price.happyHour,
+              isHappyHour: isLive && item.price.happyHour,
               happyHourPrice: item.price.happyHour,
               standardPrice: item.price.standard
             }))
@@ -561,11 +589,11 @@ const RestaurantMenuSystem = () => {
       {category.name === 'Happy Hours' && happyHoursData && happyHoursData.exists && (
         <div className="absolute top-4 right-4 z-30">
           <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-            happyHoursData.isLive 
-              ? 'bg-green-500 text-white animate-pulse' 
+            isLive
+              ? 'bg-green-500 text-white animate-pulse'
               : 'bg-gray-800/80 text-yellow-300'
           }`}>
-            {happyHoursData.isLive ? '🔴 LIVE' : `⏰ ${happyHoursData.startTime}`}
+            {isLive ? '🔴 LIVE' : `⏰ ${convertTo12Hour(happyHoursData.startTime)}`}
           </div>
         </div>
       )}
@@ -578,7 +606,7 @@ const RestaurantMenuSystem = () => {
         {/* Happy Hours additional info */}
         {category.name === 'Happy Hours' && happyHoursData && happyHoursData.exists && (
           <p className="text-sm text-gray-200 opacity-90 mb-2">
-            {happyHoursData.isLive ? 'LIVE NOW' : `Available ${convertTo12Hour(happyHoursData.startTime)} - ${convertTo12Hour(happyHoursData.endTime)}`}
+            {isLive ? 'LIVE NOW' : `Available ${convertTo12Hour(happyHoursData.startTime)} - ${convertTo12Hour(happyHoursData.endTime)}`}
           </p>
         )}
 
@@ -614,7 +642,7 @@ const RestaurantMenuSystem = () => {
           style={{ backgroundImage: `url(${item.image})` }}
         >
           {/* Happy Hour Live Badge */}
-          {item.isHappyHour && happyHoursData && happyHoursData.isLive && (
+          {item.isHappyHour && isLive && (
             <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
               🔴 LIVE
             </div>
