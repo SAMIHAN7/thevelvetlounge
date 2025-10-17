@@ -23,6 +23,13 @@ const isCurrentlyLive = (startTime, endTime) => {
   if (!startTime || !endTime) return false;
 
   const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+  // Check if it's Monday to Friday (1-5)
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    return false; // Not available on weekends
+  }
+
   const currentHours = now.getHours();
   const currentMinutes = now.getMinutes();
   const currentTimeInMinutes = currentHours * 60 + currentMinutes;
