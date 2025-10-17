@@ -590,63 +590,71 @@ const RestaurantMenuSystem = () => {
     );
   };
 
-  const FoodItemCard = ({ item }) => (
-    <div className={`group flex bg-gray-800/50 backdrop-blur-sm border ${
-      item.isHappyHour 
-        ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10' 
-        : 'border-gray-700/50'
-    } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer`}>
-      {/* Left: Image */}
-      <div
-        className="w-40 h-40 flex-shrink-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
-        style={{ backgroundImage: `url(${item.image})` }}
-      >
-        {/* Happy Hour Live Badge */}
-        {item.isHappyHour && happyHoursData && happyHoursData.isLive && (
-          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
-            🔴 LIVE
-          </div>
-        )}
-      </div>
+  const FoodItemCard = ({ item }) => {
+    // Check if we're on the happy hours page
+    const isHappyHoursPage = categoryId?.toLowerCase() === 'happyhours' || categoryId?.toLowerCase() === 'happy-hours';
 
-      {/* Right: Content */}
-      <div className="flex flex-col justify-between p-4 flex-grow">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className={`text-xl font-bold ${
-              item.isHappyHour ? 'text-yellow-400' : 'text-white'
-            } group-hover:text-yellow-400 transition-colors duration-300`}>
-              {item.name}
-            </h4>
-            {item.type && item.type !== 'None' && (
-              <div className="flex items-center gap-1">
-                {getFoodTypeIcon(item.type)}
-                {/* <span className="text-xs text-gray-400">{item.type}</span> */}
-              </div>
-            )}
-          </div>
-          <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
+    // Determine which price to show
+    const displayPrice = isHappyHoursPage && item.happyHourPrice
+      ? `₹${item.happyHourPrice}`
+      : item.price;
+
+    // Show original price if we're showing happy hour price
+    const showOriginalPrice = isHappyHoursPage && item.happyHourPrice && item.standardPrice;
+
+    return (
+      <div className={`group flex bg-gray-800/50 backdrop-blur-sm border ${
+        item.isHappyHour
+          ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10'
+          : 'border-gray-700/50'
+      } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer`}>
+        {/* Left: Image */}
+        <div
+          className="w-40 h-40 flex-shrink-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
+          style={{ backgroundImage: `url(${item.image})` }}
+        >
+          {/* Happy Hour Live Badge */}
+          {item.isHappyHour && happyHoursData && happyHoursData.isLive && (
+            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
+              🔴 LIVE
+            </div>
+          )}
         </div>
-        <div className={`mt-2 ${
-          item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
-        }`}>
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold">{item.price}</span>
-            {item.originalPrice && item.isCurrentlyDiscounted && (
-              <span className="text-sm text-gray-400 line-through">{item.originalPrice}</span>
-            )}
-            {item.isCurrentlyDiscounted && (
-              <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full font-bold">
-                HAPPY HOUR
-              </span>
-            )}
-          </div>
 
+        {/* Right: Content */}
+        <div className="flex flex-col justify-between p-4 flex-grow">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className={`text-xl font-bold ${
+                item.isHappyHour ? 'text-yellow-400' : 'text-white'
+              } group-hover:text-yellow-400 transition-colors duration-300`}>
+                {item.name}
+              </h4>
+              {item.type && item.type !== 'None' && (
+                <div className="flex items-center gap-1">
+                  {getFoodTypeIcon(item.type)}
+                  {/* <span className="text-xs text-gray-400">{item.type}</span> */}
+                </div>
+              )}
+            </div>
+            <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
+          </div>
+          <div className={`mt-2 ${
+            item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
+          }`}>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold">{displayPrice}</span>
+              {showOriginalPrice && (
+                <span className="text-sm text-gray-400 line-through">₹{item.standardPrice}</span>
+              )}
+           
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
-
-  );
+    );
+  };
 
   // Loading state
   if (loading) {

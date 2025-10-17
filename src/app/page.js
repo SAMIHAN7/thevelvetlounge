@@ -16,6 +16,7 @@ export default function ClubLandingPage() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [galleryImages, setGalleryImages] = useState({ ambience: [], food: [] });
   const [liveOffers, setLiveOffers] = useState([]);
+  const [happyHours, setHappyHours] = useState(null);
   const [loading, setLoading] = useState(true);
   
   // API base URL from environment variable
@@ -26,20 +27,20 @@ export default function ClubLandingPage() {
     const fetchLandingPageData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch all landing page data
         const response = await fetch(`${API_BASE_URL}/web/landing`);
         const result = await response.json();
-        
+
         if (result?.success) {
           const { events, menu, gallery, offers } = result?.data || {};
-          
+
           // Set events data
           setUpcomingEvents(events?.upcoming || []);
-          
+
           // Set menu categories data
           setMenuCategories(menu?.categories || []);
-          
+
           // Set gallery images data
           setGalleryImages({
             ambience: gallery?.ambience || [],
@@ -48,6 +49,14 @@ export default function ClubLandingPage() {
 
           // Set offers data
           setLiveOffers(offers?.live || []);
+        }
+
+        // Fetch happy hours data
+        const happyHoursResponse = await fetch(`${API_BASE_URL}/web/landing/happyhours`);
+        const happyHoursResult = await happyHoursResponse.json();
+
+        if (happyHoursResult?.success) {
+          setHappyHours(happyHoursResult?.data);
         }
       } catch (error) {
         console.error('Error fetching landing page data:', error);
@@ -84,11 +93,28 @@ export default function ClubLandingPage() {
   // Helper function to format time
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
+  };
+
+  // Helper function to convert 24-hour time to 12-hour format with AM/PM
+  const convertTo12Hour = (time24) => {
+    if (!time24) return '';
+
+    // Split the time string (assuming format like "11:00" or "23:00")
+    const [hours, minutes] = time24.split(':');
+    let hour = parseInt(hours, 10);
+
+    // Determine AM or PM
+    const period = hour >= 12 ? 'PM' : 'AM';
+
+    // Convert to 12-hour format
+    hour = hour % 12 || 12; // Convert 0 to 12 for midnight
+
+    return `${hour}:${minutes} ${period}`;
   };
 
   const scrollMenu = (direction) => {
@@ -201,38 +227,31 @@ export default function ClubLandingPage() {
 
           <div className="max-w-4xl mx-auto">
             <div className="bg-gradient-to-r from-amber-600/10 via-yellow-600/10 to-amber-600/10 backdrop-blur-sm border border-amber-400/30 rounded-3xl p-8 md:p-12 text-center">
-              <div className="flex items-center justify-center mb-6">
-                <Clock className="w-12 h-12 text-amber-400 mr-4" />
-                <div className="text-left">
-                  <h3 className="text-3xl font-bold text-white mb-2">Daily 11:00 PM - 8:00 PM</h3>
-                  <p className="text-amber-300 text-lg">Exclusive offers on premium drinks & appetizers</p>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-20 bg-gray-800 rounded-lg mb-6"></div>
+                  <div className="h-12 bg-gray-800 rounded-lg"></div>
                 </div>
-              </div>
+              ) : happyHours ? (
+                <>
+                  <div className="flex flex-col items-center justify-center mb-8">
+                    <Clock className="w-16 h-16 text-amber-400 mb-4" />
+                    <h3 className="text-2xl font-bold text-white mb-2">Monday to Friday</h3>
+                    <p className="text-3xl font-bold text-amber-300">
+                      {convertTo12Hour(happyHours?.startTime)} - {convertTo12Hour(happyHours?.endTime)}
+                    </p>
+                  </div>
 
-              <div className="grid md:grid-cols-3 gap-8 mb-8">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🍸</div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Premium Cocktails</h4>
-                  <p className="text-gray-300">Signature cocktails, now twice as tempting.</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🍷</div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Fine Wine</h4>
-                  <p className="text-gray-300">Special pricing on wine selection</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🥨</div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Appetizers</h4>
-                  <p className="text-gray-300">Discounted starters & snacks</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => router.push('/menu/happyhours')}
-                className="px-10 py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white font-bold rounded-lg hover:scale-105 transform transition-all duration-300 shadow-xl shadow-amber-500/25"
-              >
-                View Happy Hours Menu
-              </button>
+                  <button
+                    onClick={() => router.push('/menu/happyhours')}
+                    className="px-10 py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white font-bold rounded-lg hover:scale-105 transform transition-all duration-300 shadow-xl shadow-amber-500/25"
+                  >
+                    View Happy Hours Menu
+                  </button>
+                </>
+              ) : (
+                <div className="text-gray-400">Happy hours information not available</div>
+              )}
             </div>
           </div>
         </div>

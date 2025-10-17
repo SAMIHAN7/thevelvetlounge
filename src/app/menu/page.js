@@ -7,13 +7,36 @@ import Footer from '../../components/Footer';
 // Utility function to convert 24-hour time to 12-hour format
 const convertTo12Hour = (time24) => {
   if (!time24) return time24;
-  
+
   const [hours, minutes] = time24.split(':');
   const hour = parseInt(hours);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
-  
+
   return `${hour12}:${minutes} ${ampm}`;
+};
+
+// Utility function to check if current time is between start and end time
+const isCurrentlyLive = (startTime, endTime) => {
+  if (!startTime || !endTime) return false;
+
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const startTimeInMinutes = startHours * 60 + startMinutes;
+
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
+  const endTimeInMinutes = endHours * 60 + endMinutes;
+
+  // Handle case where end time is past midnight (e.g., 22:00 - 02:00)
+  if (endTimeInMinutes < startTimeInMinutes) {
+    return currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes;
+  }
+
+  return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;
 };
 
 const MenuCategoriesPage = () => {
@@ -159,21 +182,26 @@ const MenuCategoriesPage = () => {
           const categoryUrl = category?.name?.toLowerCase().replace(/\s+/g, '');
           // All categories from database are clickable
           const isClickable = true;
-          
+
+          // Check if Happy Hours is currently live based on time
+          const isLive = category?.name === 'Happy Hours' && happyHoursData?.exists
+            ? isCurrentlyLive(happyHoursData?.startTime, happyHoursData?.endTime)
+            : false;
+
           const CategoryWrapper = isClickable ? Link : 'div';
-          const linkProps = isClickable ? { 
-            href: `/menu/${category?.name === 'Happy Hours' ? 'happyhours' : categoryUrl}` 
+          const linkProps = isClickable ? {
+            href: `/menu/${category?.name === 'Happy Hours' ? 'happyhours' : categoryUrl}`
           } : {};
-          
+
           return (
             <CategoryWrapper key={category?.id} {...linkProps}>
               <div className={`group relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-500 ${
-                isClickable 
-                  ? 'hover:scale-105 hover:shadow-3xl cursor-pointer' 
+                isClickable
+                  ? 'hover:scale-105 hover:shadow-3xl cursor-pointer'
                   : 'opacity-70 cursor-not-allowed'
               }`}>
                 {/* Background Image */}
-                <div 
+                <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 z-0"
                   style={{
                     backgroundImage: `url(${category?.image})`
@@ -190,12 +218,12 @@ const MenuCategoriesPage = () => {
                 {category?.name === 'Happy Hours' && happyHoursData?.exists && (
                   <div className="absolute top-4 right-4 z-30">
                     <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      happyHoursData?.isLive
-                        ? 'bg-green-500 text-white animate-pulse' 
+                      isLive
+                        ? 'bg-green-500 text-white animate-pulse'
                         : 'bg-gray-800/80 text-yellow-300'
                     }`}>
-                      {happyHoursData?.isLive 
-                        ? '🔴 LIVE' 
+                      {isLive
+                        ? '🔴 LIVE'
                         : `⏰ ${convertTo12Hour(happyHoursData?.startTime)}`
                       }
                     </div>
@@ -207,24 +235,24 @@ const MenuCategoriesPage = () => {
                   <h3 className="text-2xl font-bold text-white mb-2 transform transition-all duration-500 group-hover:scale-110 group-hover:text-yellow-300">
                     {category?.name}
                   </h3>
-                  
-                
-                  
+
+
+
                   {/* Happy Hours additional info */}
                   {category?.name === 'Happy Hours' && happyHoursData?.exists && (
                     <p className="text-sm text-gray-200 opacity-90">
-                      {happyHoursData?.isLive ? 'LIVE NOW' : `Available ${convertTo12Hour(happyHoursData?.startTime)} - ${convertTo12Hour(happyHoursData?.endTime)}`}
+                      {isLive ? 'LIVE NOW' : `Available ${convertTo12Hour(happyHoursData?.startTime)} - ${convertTo12Hour(happyHoursData?.endTime)}`}
                     </p>
                   )}
 
                   {/* Clickable indicator */}
-                 
-                  
+
+
                   <div className="w-0 h-0.5 bg-yellow-400 transition-all duration-500 group-hover:w-full"></div>
                 </div>
 
                 {/* Glow Effect */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30" 
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30"
                      style={{
                        boxShadow: 'inset 0 0 50px rgba(255, 215, 0, 0.3)'
                      }} />
