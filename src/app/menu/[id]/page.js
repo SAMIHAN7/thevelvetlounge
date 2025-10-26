@@ -113,15 +113,46 @@ const RestaurantMenuSystem = () => {
 
       // Apply food type filter
       if (selectedFilter !== 'All') {
-        filteredItems = filteredItems.filter(item => item.type === selectedFilter);
+        filteredItems = filteredItems.filter(item => {
+          // For items without options, check the item type directly
+          if (!item.hasOptions) {
+            return item.type === selectedFilter;
+          }
+
+          // For items with options, check if ANY variant matches the selected type
+          if (item.optionGroups && item.optionGroups.length > 0) {
+            return item.optionGroups.some(group =>
+              group.variants && group.variants.some(variant =>
+                variant.type === selectedFilter
+              )
+            );
+          }
+
+          return false;
+        });
       }
 
       // Apply search filter
       if (searchTerm) {
-        filteredItems = filteredItems.filter(item => 
-          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        filteredItems = filteredItems.filter(item => {
+          const searchLower = searchTerm.toLowerCase();
+
+          // Search in item name and description
+          const matchesNameOrDesc = item.name.toLowerCase().includes(searchLower) ||
+            (item.description && item.description.toLowerCase().includes(searchLower));
+
+          // Search in option groups and variants
+          const matchesOptions = item.hasOptions && item.optionGroups &&
+            item.optionGroups.some(group =>
+              (group.title && group.title.toLowerCase().includes(searchLower)) ||
+              (group.description && group.description.toLowerCase().includes(searchLower)) ||
+              (group.variants && group.variants.some(variant =>
+                variant.name.toLowerCase().includes(searchLower)
+              ))
+            );
+
+          return matchesNameOrDesc || matchesOptions;
+        });
       }
 
       return {
@@ -368,21 +399,25 @@ const RestaurantMenuSystem = () => {
               id: item._id || item.id,
               name: item.name,
               description: item.description || 'Delicious menu item',
-              price: isLive && item.price.happyHour
+              // Include hasOptions and optionGroups from API
+              hasOptions: item.hasOptions || false,
+              optionGroups: item.optionGroups || [],
+              // Regular price (for non-option items)
+              price: item.hasOptions ? null : (isLive && item.price?.happyHour
                 ? `₹${item.price.happyHour}`
-                : `₹${item.price.standard}`,
-              originalPrice: isLive && item.price.happyHour
+                : `₹${item.price?.standard}`),
+              originalPrice: item.hasOptions ? null : (isLive && item.price?.happyHour
                 ? `₹${item.price.standard}`
-                : null,
+                : null),
               image: item.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop',
               isSpicy: item.isSpicy || false,
               prepTime: item.prepTime || '15 min',
               rating: item.rating || 4.5,
               type: item.type,
-              isCurrentlyDiscounted: isLive && item.price.happyHour,
-              isHappyHour: isLive && item.price.happyHour,
-              happyHourPrice: item.price.happyHour,
-              standardPrice: item.price.standard
+              isCurrentlyDiscounted: !item.hasOptions && isLive && item.price?.happyHour,
+              isHappyHour: !item.hasOptions && isLive && item.price?.happyHour,
+              happyHourPrice: item.price?.happyHour,
+              standardPrice: item.price?.standard
             }))
           }));
           setFoodSections(mappedSections);
@@ -629,34 +664,51 @@ const RestaurantMenuSystem = () => {
     // Check if we're on the happy hours page
     const isHappyHoursPage = categoryId?.toLowerCase() === 'happyhours' || categoryId?.toLowerCase() === 'happy-hours';
 
-    // Determine which price to show
-    const displayPrice = isHappyHoursPage && item.happyHourPrice
+    // Check if item has options
+    const hasOptions = item.hasOptions && item.optionGroups && item.optionGroups.length > 0;
+
+    // State to track expanded option groups (using item id to make it unique)
+    const [expandedGroups, setExpandedGroups] = useState({});
+
+    // Determine which price to show (for non-option items)
+    const displayPrice = !hasOptions && isHappyHoursPage && item.happyHourPrice
       ? `₹${item.happyHourPrice}`
-      : item.price;
+      : !hasOptions ? item.price : null;
 
     // Show original price if we're showing happy hour price
-    const showOriginalPrice = isHappyHoursPage && item.happyHourPrice && item.standardPrice;
+    const showOriginalPrice = !hasOptions && isHappyHoursPage && item.happyHourPrice && item.standardPrice;
+
+    // Toggle group expansion
+    const toggleGroup = (groupIndex) => {
+      setExpandedGroups(prev => ({
+        ...prev,
+        [groupIndex]: !prev[groupIndex]
+      }));
+    };
 
     return (
-      <div className={`group flex bg-gray-800/50 backdrop-blur-sm border ${
+      <div className={`group flex flex-col bg-gray-800/50 backdrop-blur-sm border ${
         item.isHappyHour
           ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10'
           : 'border-gray-700/50'
-      } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer`}>
-        {/* Left: Image */}
-        <div
-          className="w-40 h-40 flex-shrink-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
-          style={{ backgroundImage: `url(${item.image})` }}
-        >
-          {/* Happy Hour Live Badge */}
-          {item.isHappyHour && isLive && (
-            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
-              🔴 LIVE
-            </div>
-          )}
-        </div>
+      } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105`}>
 
-        {/* Right: Content */}
+        {/* Top: Image */}
+        {item.image && (
+          <div
+            className="w-full h-48 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
+            style={{ backgroundImage: `url(${item.image})` }}
+          >
+            {/* Happy Hour Live Badge */}
+            {item.isHappyHour && isLive && (
+              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
+                🔴 LIVE
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Bottom: Content */}
         <div className="flex flex-col justify-between p-4 flex-grow">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -665,27 +717,99 @@ const RestaurantMenuSystem = () => {
               } group-hover:text-yellow-400 transition-colors duration-300`}>
                 {item.name}
               </h4>
-              {item.type && item.type !== 'None' && (
+              {item.type && item.type !== 'None' && !hasOptions && (
                 <div className="flex items-center gap-1">
                   {getFoodTypeIcon(item.type)}
-                  {/* <span className="text-xs text-gray-400">{item.type}</span> */}
                 </div>
               )}
             </div>
-            <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
+            <p className="text-gray-300 text-sm leading-relaxed mb-3">{item.description}</p>
           </div>
-          <div className={`mt-2 ${
-            item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
-          }`}>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold">{displayPrice}</span>
-              {showOriginalPrice && (
-                <span className="text-sm text-gray-400 line-through">₹{item.standardPrice}</span>
-              )}
-           
-            </div>
 
-          </div>
+          {/* Price Display - Different for hasOptions */}
+          {hasOptions ? (
+            <div className="space-y-2 mt-2">
+              {item.optionGroups.map((group, groupIndex) => (
+                <div key={groupIndex} className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-900/30">
+                  {/* Collapsible Header */}
+                  <button
+                    onClick={() => toggleGroup(groupIndex)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-gray-700/30 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      {/* Group Title */}
+                      <h5 className="font-bold text-white text-sm uppercase">
+                        {group.title || 'Options'}
+                      </h5>
+                      {/* Variant count badge */}
+                      <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded-full">
+                        {group.variants?.length || 0} options
+                      </span>
+                    </div>
+
+                    {/* Chevron icon */}
+                    <div className="text-yellow-400">
+                      {expandedGroups[groupIndex] ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Collapsible Content */}
+                  {expandedGroups[groupIndex] && (
+                    <div className="border-t border-gray-700/50 p-3 pt-2">
+                      {/* Group Description */}
+                      {group.description && (
+                        <p className="text-gray-400 text-xs mb-2 italic">
+                          {group.description}
+                        </p>
+                      )}
+
+                      {/* Variants */}
+                      <div className="space-y-1">
+                        {group.variants?.map((variant, variantIndex) => (
+                          <div
+                            key={variantIndex}
+                            className="flex justify-between items-center py-2 text-sm hover:bg-gray-700/30 px-2 rounded transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              {/* Veg/Non-Veg indicator */}
+                              {variant.type && variant.type !== 'None' && (
+                                getFoodTypeIcon(variant.type)
+                              )}
+
+                              {/* Variant name */}
+                              <span className="text-gray-200 font-medium uppercase text-xs">
+                                {variant.name}
+                              </span>
+                            </div>
+
+                            {/* Price */}
+                            <span className="font-semibold text-yellow-400">
+                              ₹{variant.price?.standard}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={`mt-2 ${
+              item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold">{displayPrice}</span>
+                {showOriginalPrice && (
+                  <span className="text-sm text-gray-400 line-through">₹{item.standardPrice}</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
