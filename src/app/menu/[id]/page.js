@@ -1019,26 +1019,26 @@ const RestaurantMenuSystem = () => {
             <div className="text-center">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="group flex items-center justify-center gap-3 mb-4 hover:scale-105 transition-transform duration-300 cursor-pointer"
+                className="group flex items-center justify-center gap-2 mb-3 hover:scale-105 transition-transform duration-300 cursor-pointer mx-auto"
               >
-                <div className="text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300">
+                <div className="text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300 flex-shrink-0">
                   {section.icon}
                 </div>
-                <h2 className="text-4xl font-bold text-white group-hover:text-yellow-400 transition-colors duration-300">
+                <h2 className="text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors duration-300 text-center">
                   {section.name}
                 </h2>
-                <div className="text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300">
+                <div className="text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300 flex-shrink-0">
                   {section.icon}
                 </div>
-                <div className="ml-2 text-yellow-400 group-hover:text-yellow-300 transition-all duration-300">
+                <div className="text-yellow-400 group-hover:text-yellow-300 transition-all duration-300 flex-shrink-0">
                   {expandedSections[section.id] ? (
-                    <ChevronUp className="w-6 h-6" />
+                    <ChevronUp className="w-5 h-5" />
                   ) : (
-                    <ChevronDown className="w-6 h-6" />
+                    <ChevronDown className="w-5 h-5" />
                   )}
                 </div>
               </button>
-              <div className="w-24 h-0.5 bg-gradient-to-r from-yellow-400 to-red-500 mx-auto"></div>
+              <div className="w-20 h-0.5 bg-gradient-to-r from-yellow-400 to-red-500 mx-auto"></div>
             </div>
 
             {/* Food Items Grid with Smooth Transition */}
