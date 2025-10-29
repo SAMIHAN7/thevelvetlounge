@@ -398,7 +398,7 @@ const RestaurantMenuSystem = () => {
             items: subcat.items.map(item => ({
               id: item._id || item.id,
               name: item.name,
-              description: item.description || 'Delicious menu item',
+              description: item.description || '',
               // Include hasOptions and optionGroups from API
               hasOptions: item.hasOptions || false,
               optionGroups: item.optionGroups || [],
@@ -660,15 +660,15 @@ const RestaurantMenuSystem = () => {
     );
   };
 
-  const FoodItemCard = ({ item }) => {
+  const FoodItemCard = ({ item, isFirstItem = false }) => {
     // Check if we're on the happy hours page
     const isHappyHoursPage = categoryId?.toLowerCase() === 'happyhours' || categoryId?.toLowerCase() === 'happy-hours';
 
     // Check if item has options
     const hasOptions = item.hasOptions && item.optionGroups && item.optionGroups.length > 0;
 
-    // State to track expanded option groups (using item id to make it unique)
-    const [expandedGroups, setExpandedGroups] = useState({});
+    // State to track if the item is expanded - first item is expanded by default
+    const [isExpanded, setIsExpanded] = useState(isFirstItem);
 
     // Determine which price to show (for non-option items)
     const displayPrice = !hasOptions && isHappyHoursPage && item.happyHourPrice
@@ -678,139 +678,148 @@ const RestaurantMenuSystem = () => {
     // Show original price if we're showing happy hour price
     const showOriginalPrice = !hasOptions && isHappyHoursPage && item.happyHourPrice && item.standardPrice;
 
-    // Toggle group expansion
-    const toggleGroup = (groupIndex) => {
-      setExpandedGroups(prev => ({
-        ...prev,
-        [groupIndex]: !prev[groupIndex]
-      }));
-    };
-
+    // ALL items now use the collapsed card format
     return (
-      <div className={`group flex flex-col bg-gray-800/50 backdrop-blur-sm border ${
+      <div className={`bg-gray-800/50 backdrop-blur-sm border ${
         item.isHappyHour
           ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10'
           : 'border-gray-700/50'
-      } rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105`}>
+      } rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300`}>
 
-        {/* Top: Image */}
-        {item.image && (
-          <div
-            className="w-full h-48 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 relative"
-            style={{ backgroundImage: `url(${item.image})` }}
-          >
-            {/* Happy Hour Live Badge */}
-            {item.isHappyHour && isLive && (
-              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold">
-                🔴 LIVE
+        {/* Collapsed Header (like reference image) */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center gap-4 p-4 hover:bg-gray-700/30 transition-colors"
+        >
+          {/* Left: Thumbnail Image - Only show when collapsed */}
+          {!isExpanded && item.image && (
+            <div
+              className="w-20 h-20 rounded-lg bg-cover bg-center flex-shrink-0"
+              style={{ backgroundImage: `url(${item.image})` }}
+            />
+          )}
+
+          {/* Center: Item Name */}
+          <div className="flex-1 text-left">
+            <h4 className={`text-lg font-bold ${
+              item.isHappyHour ? 'text-yellow-400' : 'text-white'
+            }`}>
+              {item.name}
+            </h4>
+            {!isExpanded && item.description && (
+              <p className="text-gray-400 text-xs mt-1 line-clamp-1">{item.description}</p>
+            )}
+          </div>
+
+          {/* Right: Chevron Icon */}
+          <div className="text-yellow-400 flex-shrink-0">
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </div>
+        </button>
+
+        {/* Expanded Content */}
+        {isExpanded && (
+          <div className="border-t border-gray-700/50 p-4">
+            {/* Full Image - Only show when expanded */}
+            {item.image && (
+              <div
+                className="w-full h-48 rounded-lg bg-cover bg-center mb-4"
+                style={{ backgroundImage: `url(${item.image})` }}
+              >
+                {/* Happy Hour Live Badge */}
+                {item.isHappyHour && isLive && (
+                  <div className="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse font-bold m-2">
+                    🔴 LIVE
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Description */}
+            {item.description && (
+              <p className="text-gray-300 text-sm mb-4">{item.description}</p>
+            )}
+
+            {/* For items WITH options - show option groups and variants */}
+            {hasOptions && (
+              <div className="space-y-3">
+                {item.optionGroups.map((group, groupIndex) => (
+                  <div key={groupIndex} className="border border-gray-700/50 rounded-lg p-3 bg-gray-900/30">
+                    {/* Group Title and Description */}
+                    {group.title && (
+                      <h5 className="font-bold text-white text-sm uppercase mb-1">
+                        {group.title}
+                      </h5>
+                    )}
+                    {group.description && (
+                      <p className="text-gray-400 text-xs mb-3 italic">
+                        {group.description}
+                      </p>
+                    )}
+
+                    {/* Variants - All visible when expanded */}
+                    <div className="space-y-2">
+                      {group.variants?.map((variant, variantIndex) => (
+                        <div
+                          key={variantIndex}
+                          className="flex justify-between items-center py-2 px-2 rounded hover:bg-gray-700/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            {/* Veg/Non-Veg indicator */}
+                            {variant.type && variant.type !== 'None' && (
+                              getFoodTypeIcon(variant.type)
+                            )}
+
+                            {/* Variant name */}
+                            <span className="text-gray-200 font-medium uppercase text-sm">
+                              {variant.name}
+                            </span>
+                          </div>
+
+                          {/* Price */}
+                          <span className="font-semibold text-yellow-400">
+                            ₹{variant.price?.standard}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* For items WITHOUT options - show price with veg/non-veg indicator */}
+            {!hasOptions && (
+              <div className="border border-gray-700/50 rounded-lg p-3 bg-gray-900/30">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    {/* Veg/Non-Veg indicator */}
+                    {item.type && item.type !== 'None' && (
+                      getFoodTypeIcon(item.type)
+                    )}
+                    <span className="text-gray-200 font-medium text-sm">Price</span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-yellow-400 text-lg">
+                      {displayPrice}
+                    </span>
+                    {showOriginalPrice && (
+                      <span className="text-sm text-gray-400 line-through">
+                        ₹{item.standardPrice}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
         )}
-
-        {/* Bottom: Content */}
-        <div className="flex flex-col justify-between p-4 flex-grow">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className={`text-xl font-bold ${
-                item.isHappyHour ? 'text-yellow-400' : 'text-white'
-              } group-hover:text-yellow-400 transition-colors duration-300`}>
-                {item.name}
-              </h4>
-              {item.type && item.type !== 'None' && !hasOptions && (
-                <div className="flex items-center gap-1">
-                  {getFoodTypeIcon(item.type)}
-                </div>
-              )}
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-3">{item.description}</p>
-          </div>
-
-          {/* Price Display - Different for hasOptions */}
-          {hasOptions ? (
-            <div className="space-y-2 mt-2">
-              {item.optionGroups.map((group, groupIndex) => (
-                <div key={groupIndex} className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-900/30">
-                  {/* Collapsible Header */}
-                  <button
-                    onClick={() => toggleGroup(groupIndex)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-gray-700/30 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      {/* Group Title */}
-                      <h5 className="font-bold text-white text-sm uppercase">
-                        {group.title || 'Options'}
-                      </h5>
-                      {/* Variant count badge */}
-                      <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded-full">
-                        {group.variants?.length || 0} options
-                      </span>
-                    </div>
-
-                    {/* Chevron icon */}
-                    <div className="text-yellow-400">
-                      {expandedGroups[groupIndex] ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </button>
-
-                  {/* Collapsible Content */}
-                  {expandedGroups[groupIndex] && (
-                    <div className="border-t border-gray-700/50 p-3 pt-2">
-                      {/* Group Description */}
-                      {group.description && (
-                        <p className="text-gray-400 text-xs mb-2 italic">
-                          {group.description}
-                        </p>
-                      )}
-
-                      {/* Variants */}
-                      <div className="space-y-1">
-                        {group.variants?.map((variant, variantIndex) => (
-                          <div
-                            key={variantIndex}
-                            className="flex justify-between items-center py-2 text-sm hover:bg-gray-700/30 px-2 rounded transition-colors"
-                          >
-                            <div className="flex items-center gap-2">
-                              {/* Veg/Non-Veg indicator */}
-                              {variant.type && variant.type !== 'None' && (
-                                getFoodTypeIcon(variant.type)
-                              )}
-
-                              {/* Variant name */}
-                              <span className="text-gray-200 font-medium uppercase text-xs">
-                                {variant.name}
-                              </span>
-                            </div>
-
-                            {/* Price */}
-                            <span className="font-semibold text-yellow-400">
-                              ₹{variant.price?.standard}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={`mt-2 ${
-              item.isHappyHour ? 'text-yellow-300' : 'text-yellow-400'
-            }`}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold">{displayPrice}</span>
-                {showOriginalPrice && (
-                  <span className="text-sm text-gray-400 line-through">₹{item.standardPrice}</span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     );
   };
@@ -1034,13 +1043,13 @@ const RestaurantMenuSystem = () => {
 
             {/* Food Items Grid with Smooth Transition */}
             <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              expandedSections[section.id] 
-                ? 'max-h-none opacity-100' 
+              expandedSections[section.id]
+                ? 'max-h-none opacity-100'
                 : 'max-h-0 opacity-0'
             }`}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
-                {section.items.map((item) => (
-                  <FoodItemCard key={item.id} item={item} />
+                {section.items.map((item, index) => (
+                  <FoodItemCard key={item.id} item={item} isFirstItem={index === 0} />
                 ))}
               </div>
             </div>
