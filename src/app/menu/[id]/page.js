@@ -675,23 +675,22 @@ const RestaurantMenuSystem = () => {
     // Show original price if we're showing happy hour price
     const showOriginalPrice = !hasOptions && isHappyHoursPage && item.happyHourPrice && item.standardPrice;
 
-    // Horizontal layout: Image left, Name/Desc right, Price/Variants below
+    // Horizontal layout: Large square image left, all content right (like reference)
     return (
-      <div className={`bg-gray-800/50 backdrop-blur-sm border ${
+      <div className={`bg-white/5 backdrop-blur-sm border ${
         item.isHappyHour
-          ? 'border-yellow-400/50 bg-gradient-to-r from-yellow-600/10 to-amber-600/10'
-          : 'border-gray-700/50'
-      } rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300`}>
+          ? 'border-yellow-400/30'
+          : 'border-gray-700/30'
+      } rounded-xl overflow-hidden hover:border-yellow-400/50 transition-all duration-300`}>
 
-        {/* Top Section: Image and Name/Description */}
-        <div className="flex">
-          {/* Left: Image */}
+        <div className="flex gap-4 p-3">
+          {/* Left: Large Image (height matches content) */}
           {item.image && (
-            <div className="w-24 sm:w-32 md:w-48 h-32 sm:h-36 md:h-48 relative flex-shrink-0 bg-gray-900/50 rounded-l-2xl overflow-hidden">
+            <div className="w-40 sm:w-48 md:w-64 relative flex-shrink-0 bg-gray-900/30 rounded-lg overflow-hidden">
               <img
                 src={item.image}
                 alt={item.name}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
               {/* Happy Hour Live Badge */}
               {item.isHappyHour && isLive && (
@@ -702,10 +701,10 @@ const RestaurantMenuSystem = () => {
             </div>
           )}
 
-          {/* Right: Name and Description */}
-          <div className="flex-1 p-3 md:p-4">
+          {/* Right: All content (Name, Description, Variants/Price) */}
+          <div className="flex-1 flex flex-col min-w-0">
             {/* Name */}
-            <h4 className={`text-base md:text-lg font-bold mb-1 md:mb-2 ${
+            <h4 className={`text-sm sm:text-base md:text-lg font-bold mb-1 ${
               item.isHappyHour ? 'text-yellow-400' : 'text-white'
             }`}>
               {item.name}
@@ -713,85 +712,84 @@ const RestaurantMenuSystem = () => {
 
             {/* Description */}
             {item.description && (
-              <p className="text-gray-400 text-xs md:text-sm line-clamp-3">{item.description}</p>
+              <p className="text-gray-400 text-xs mb-2 line-clamp-2">
+                {item.description}
+              </p>
             )}
-          </div>
-        </div>
 
-        {/* Bottom Section: Variants or Price (Full Width) */}
-        <div className="px-3 pb-3 md:px-4 md:pb-4">
-          {hasOptions ? (
-            // For items WITH options - show option groups and variants
-            <div className="space-y-3">
-              {item.optionGroups.map((group, groupIndex) => (
-                <div key={groupIndex} className="border border-gray-700/50 rounded-lg p-3 bg-gray-900/30">
-                  {/* Group Title and Description */}
-                  {group.title && (
-                    <h5 className="font-bold text-white text-sm uppercase mb-1">
-                      {group.title}
-                    </h5>
-                  )}
-                  {group.description && (
-                    <p className="text-gray-400 text-xs mb-3 italic">
-                      {group.description}
-                    </p>
-                  )}
+            {/* Variants or Price - directly below description */}
+            <div className="mt-auto">
+              {hasOptions ? (
+                // For items WITH options - clean variant list
+                <div className="space-y-1.5">
+                  {item.optionGroups.map((group, groupIndex) => (
+                    <div key={groupIndex}>
+                      {/* Group Title */}
+                      {group.title && (
+                        <h5 className="font-bold text-white text-xs uppercase mb-0.5">
+                          {group.title}
+                        </h5>
+                      )}
+                      {/* Group Description */}
+                      {group.description && (
+                        <p className="text-gray-500 text-xs mb-1 italic">
+                          {group.description}
+                        </p>
+                      )}
 
-                  {/* Variants - All visible */}
-                  <div className="space-y-2">
-                    {group.variants?.map((variant, variantIndex) => (
-                      <div
-                        key={variantIndex}
-                        className="flex justify-between items-center py-2 px-2 rounded hover:bg-gray-700/30 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          {/* Veg/Non-Veg indicator */}
-                          {variant.type && variant.type !== 'None' && (
-                            getFoodTypeIcon(variant.type)
-                          )}
+                      {/* Variants */}
+                      <div className="space-y-0.5">
+                        {group.variants?.map((variant, variantIndex) => (
+                          <div
+                            key={variantIndex}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              {/* Veg/Non-Veg indicator */}
+                              {variant.type && variant.type !== 'None' && (
+                                getFoodTypeIcon(variant.type)
+                              )}
+                              {/* Variant name */}
+                              <span className="text-gray-300 text-xs">
+                                {variant.name}
+                              </span>
+                            </div>
 
-                          {/* Variant name */}
-                          <span className="text-gray-200 font-medium uppercase text-sm">
-                            {variant.name}
-                          </span>
-                        </div>
-
-                        {/* Price */}
-                        <span className="font-semibold text-yellow-400">
-                          ₹{variant.price?.standard}
-                        </span>
+                            {/* Price - bold and prominent */}
+                            <span className="font-bold text-white text-sm">
+                              {variant.price?.standard}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // For items WITHOUT options - simple price display
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    {/* Veg/Non-Veg indicator */}
+                    {item.type && item.type !== 'None' && (
+                      getFoodTypeIcon(item.type)
+                    )}
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white text-lg">
+                      {displayPrice}
+                    </span>
+                    {showOriginalPrice && (
+                      <span className="text-xs text-gray-400 line-through">
+                        ₹{item.standardPrice}
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
-            // For items WITHOUT options - show price with veg/non-veg indicator
-            <div className="border border-gray-700/50 rounded-lg p-3 bg-gray-900/30">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  {/* Veg/Non-Veg indicator */}
-                  {item.type && item.type !== 'None' && (
-                    getFoodTypeIcon(item.type)
-                  )}
-                  {/* <span className="text-gray-200 font-medium text-sm">Price</span> */}
-                </div>
-
-                {/* Price */}
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-yellow-400 text-lg">
-                    {displayPrice}
-                  </span>
-                  {showOriginalPrice && (
-                    <span className="text-sm text-gray-400 line-through">
-                      ₹{item.standardPrice}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     );
