@@ -775,7 +775,7 @@ const RestaurantMenuSystem = () => {
                   {item.type && item.type !== 'None' && (
                     getFoodTypeIcon(item.type)
                   )}
-                  <span className="text-gray-200 font-medium text-sm">Price</span>
+                  {/* <span className="text-gray-200 font-medium text-sm">Price</span> */}
                 </div>
 
                 {/* Price */}
