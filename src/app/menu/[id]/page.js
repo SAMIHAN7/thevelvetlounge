@@ -683,10 +683,10 @@ const RestaurantMenuSystem = () => {
           : 'border-gray-700/30'
       } rounded-xl overflow-hidden hover:border-yellow-400/50 transition-all duration-300`}>
 
-        <div className="flex gap-4 p-3">
-          {/* Left: Large Image (height matches content) */}
+        <div className="flex gap-6">
+          {/* Left: Large Image (flush to left, top, bottom) */}
           {item.image && (
-            <div className="w-40 sm:w-48 md:w-64 relative flex-shrink-0 bg-gray-900/30 rounded-lg overflow-hidden">
+            <div className="w-48 sm:w-56 md:w-80 relative flex-shrink-0 bg-gray-900/30">
               <img
                 src={item.image}
                 alt={item.name}
@@ -702,9 +702,11 @@ const RestaurantMenuSystem = () => {
           )}
 
           {/* Right: All content (Name, Description, Variants/Price) */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className={`flex-1 flex flex-col min-w-0 py-6 pr-6 ${!item.description ? 'justify-center' : ''}`}>
             {/* Name */}
-            <h4 className={`text-sm sm:text-base md:text-lg font-bold mb-1 ${
+            <h4 className={`text-sm sm:text-base md:text-lg font-bold ${
+              item.description ? 'mb-1' : 'mb-3'
+            } ${
               item.isHappyHour ? 'text-yellow-400' : 'text-white'
             }`}>
               {item.name}
