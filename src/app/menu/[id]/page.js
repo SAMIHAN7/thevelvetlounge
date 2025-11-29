@@ -89,6 +89,7 @@ const RestaurantMenuSystem = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [filteredSections, setFilteredSections] = useState([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   // Calculate if Happy Hours is currently live based on time
   const isLive = happyHoursData?.exists && happyHoursData?.startTime && happyHoursData?.endTime
@@ -167,22 +168,41 @@ const RestaurantMenuSystem = () => {
   }, [foodSections, searchTerm, selectedFilter]);
 
   const fetchAllData = async () => {
-    await Promise.all([fetchCategoryMenuData(), fetchHappyHoursData(), fetchCategoriesData()]);
+    // Fetch happy hours first, then use it for categories
+    const hhData = await fetchHappyHoursData();
+    await fetchCategoryMenuData();
+    await fetchCategoriesData(hhData);
   };
 
-  const fetchCategoriesData = async () => {
+  const fetchCategoriesData = async (hhData = null) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/web/landing/menu/categories`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data.categories) {
-          const apiCategories = data.data.categories.map((cat, index) => ({
+          let apiCategories = data.data.categories.map((cat, index) => ({
             id: index + 1,
             name: cat.name,
             image: cat.image || defaultCategories.find(dc => dc.name === cat.name)?.image,
             gradient: defaultCategories.find(dc => dc.name === cat.name)?.gradient || 'from-gray-600/80 to-gray-700/80',
             totalItems: cat.totalItems
           }));
+
+          // Add Happy Hours if data is provided
+          if (hhData?.exists) {
+            const hasHappyHours = apiCategories.some(cat => cat.name === 'Happy Hours');
+            if (!hasHappyHours) {
+              const happyHoursCategory = {
+                id: apiCategories.length + 1,
+                name: 'Happy Hours',
+                image: hhData.image || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&h=300&fit=crop',
+                gradient: 'from-yellow-600/80 to-amber-600/80',
+                totalItems: null
+              };
+              apiCategories = [...apiCategories, happyHoursCategory];
+            }
+          }
+
           setCategoriesData(apiCategories);
         } else {
           setCategoriesData([]);
@@ -195,30 +215,6 @@ const RestaurantMenuSystem = () => {
       setCategoriesData([]);
     }
   };
-
-  const addHappyHoursCategory = (existingCategories) => {
-    if (happyHoursData && happyHoursData.exists) {
-      const hasHappyHours = existingCategories.some(cat => cat.name === 'Happy Hours');
-      if (!hasHappyHours) {
-        const happyHoursCategory = {
-          id: existingCategories.length + 1,
-          name: 'Happy Hours',
-          image: happyHoursData.image || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&h=300&fit=crop',
-          gradient: 'from-yellow-600/80 to-amber-600/80',
-          totalItems: null
-        };
-        return [...existingCategories, happyHoursCategory];
-      }
-    }
-    return existingCategories;
-  };
-
-  // Update categories when happy hours data changes
-  useEffect(() => {
-    if (categories.length > 0 || (happyHoursData !== null)) {
-      setCategoriesData(prevCategories => addHappyHoursCategory(prevCategories));
-    }
-  }, [happyHoursData]);
 
 
   const fetchAllMenuItemsForHappyHours = async () => {
@@ -451,10 +447,13 @@ const RestaurantMenuSystem = () => {
         const data = await response.json();
         if (data.success) {
           setHappyHoursData(data.data);
+          return data.data; // Return the data for use in fetchCategoriesData
         }
       }
+      return null;
     } catch (error) {
       console.error('Error fetching happy hours data:', error);
+      return null;
     }
   };
 
@@ -714,9 +713,24 @@ const RestaurantMenuSystem = () => {
 
             {/* Description */}
             {item.description && (
-              <p className="text-gray-400 text-xs mb-2 line-clamp-2">
-                {item.description}
-              </p>
+              <div className="mb-2">
+                <p className={`text-gray-400 text-xs ${
+                  expandedDescriptions[item.id] ? '' : 'line-clamp-2'
+                }`}>
+                  {item.description}
+                </p>
+                {item.description.length > 60 && (
+                  <button
+                    onClick={() => setExpandedDescriptions(prev => ({
+                      ...prev,
+                      [item.id]: !prev[item.id]
+                    }))}
+                    className="text-yellow-400 hover:text-yellow-300 text-xs mt-1 font-medium transition-colors duration-200"
+                  >
+                    {expandedDescriptions[item.id] ? 'Read Less' : 'Read More'}
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Variants or Price - directly below description */}

@@ -84,24 +84,41 @@ const MenuCategoriesPage = () => {
   }, []);
 
   const fetchAllData = async () => {
-    await Promise.all([fetchMenuData(), fetchHappyHoursData()]);
+    // Fetch happy hours first, then menu data
+    const hhData = await fetchHappyHoursData();
+    await fetchMenuData(hhData);
   };
 
-  const fetchMenuData = async () => {
+  const fetchMenuData = async (hhData = null) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/menu/categories`);
       if (response.ok) {
         const data = await response.json();
         if (data?.success && data?.data?.categories) {
           // Map API data to our format - only show what's in database
-          const apiCategories = data?.data?.categories?.map((cat, index) => ({
+          let apiCategories = data?.data?.categories?.map((cat, index) => ({
             id: index + 1,
             name: cat?.name,
             image: cat?.image || defaultCategories.find(dc => dc.name === cat?.name)?.image,
             gradient: defaultCategories.find(dc => dc.name === cat?.name)?.gradient || 'from-gray-600/80 to-gray-700/80',
             totalItems: cat?.totalItems
           })) || [];
-          
+
+          // Add Happy Hours if data is provided
+          if (hhData?.exists) {
+            const hasHappyHours = apiCategories.some(cat => cat.name === 'Happy Hours');
+            if (!hasHappyHours) {
+              const happyHoursCategory = {
+                id: apiCategories.length + 1,
+                name: 'Happy Hours',
+                image: hhData.image || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&h=300&fit=crop',
+                gradient: 'from-yellow-600/80 to-amber-600/80',
+                totalItems: null
+              };
+              apiCategories = [...apiCategories, happyHoursCategory];
+            }
+          }
+
           setCategories(apiCategories);
         } else {
           setCategories([]);
@@ -115,24 +132,6 @@ const MenuCategoriesPage = () => {
     }
   };
 
-  const addHappyHoursCategory = (existingCategories) => {
-    // Add Happy Hours as separate category if it exists in database
-    if (happyHoursData?.exists) {
-      const hasHappyHours = existingCategories?.some(cat => cat?.name === 'Happy Hours');
-      if (!hasHappyHours) {
-        const happyHoursCategory = {
-          id: (existingCategories?.length || 0) + 1,
-          name: 'Happy Hours',
-          image: happyHoursData?.image || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&h=300&fit=crop',
-          gradient: 'from-yellow-600/80 to-amber-600/80',
-          totalItems: null
-        };
-        return [...(existingCategories || []), happyHoursCategory];
-      }
-    }
-    return existingCategories || [];
-  };
-
   const fetchHappyHoursData = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/web/landing/happyhours`);
@@ -140,21 +139,17 @@ const MenuCategoriesPage = () => {
         const data = await response.json();
         if (data?.success) {
           setHappyHoursData(data?.data);
+          return data?.data; // Return the data for use in fetchMenuData
         }
       }
+      return null;
     } catch (error) {
       console.error('Error fetching happy hours data:', error);
+      return null;
     } finally {
       setLoading(false);
     }
   };
-
-  // Update categories when happy hours data changes
-  useEffect(() => {
-    if (categories.length > 0 || (happyHoursData !== null)) {
-      setCategories(prevCategories => addHappyHoursCategory(prevCategories));
-    }
-  }, [happyHoursData]);
 
   return (
     <>
