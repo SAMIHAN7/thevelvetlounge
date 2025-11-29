@@ -188,8 +188,8 @@ const RestaurantMenuSystem = () => {
             totalItems: cat.totalItems
           }));
 
-          // Add Happy Hours if data is provided
-          if (hhData?.exists) {
+          // Add Happy Hours only if it exists AND is currently live (within time window)
+          if (hhData?.exists && isCurrentlyLive(hhData?.startTime, hhData?.endTime)) {
             const hasHappyHours = apiCategories.some(cat => cat.name === 'Happy Hours');
             if (!hasHappyHours) {
               const happyHoursCategory = {
@@ -683,9 +683,9 @@ const RestaurantMenuSystem = () => {
       } rounded-xl overflow-hidden hover:border-yellow-400/50 transition-all duration-300`}>
 
         <div className="flex gap-6">
-          {/* Left: Large Image (flush to left, top, bottom) */}
+          {/* Left: Large Image (flush to left, top, bottom) - Fixed height */}
           {item.image && (
-            <div className="w-48 sm:w-56 md:w-80 relative flex-shrink-0 bg-gray-900/30">
+            <div className="w-48 sm:w-56 md:w-80 h-48 sm:h-56 md:h-64 relative flex-shrink-0 bg-gray-900/30">
               <img
                 src={item.image}
                 alt={item.name}

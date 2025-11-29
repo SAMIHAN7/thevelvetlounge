@@ -104,8 +104,8 @@ const MenuCategoriesPage = () => {
             totalItems: cat?.totalItems
           })) || [];
 
-          // Add Happy Hours if data is provided
-          if (hhData?.exists) {
+          // Add Happy Hours only if it exists AND is currently live (within time window)
+          if (hhData?.exists && isCurrentlyLive(hhData?.startTime, hhData?.endTime)) {
             const hasHappyHours = apiCategories.some(cat => cat.name === 'Happy Hours');
             if (!hasHappyHours) {
               const happyHoursCategory = {
