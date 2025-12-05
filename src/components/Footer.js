@@ -48,7 +48,7 @@ export default function Footer() {
                 <div className="flex-1">
                   <div className="text-white font-semibold mb-2">The Velvet Lounge, Millennia Building, Near Woodland Store, Tarabai park, Kolhapur. 416003</div>
                   <a 
-                    href="https://maps.app.goo.gl/dukC6d3mbBkMGGu26?g_st=iw" 
+                    href="https://maps.app.goo.gl/CgebiyxJpazJkqnH9" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-red-300 hover:text-red-200 transition-colors duration-200 text-sm"
@@ -60,7 +60,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center">
                 <Phone className="w-5 h-5 mr-3 text-red-400" />
-                <span className="text-white">+91  9699790696</span>
+                <span className="text-white">+91 8600989001</span>
               </div>
             </div>
           </div>
